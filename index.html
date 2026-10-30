@@ -53,7 +53,7 @@ p { margin: 0 0 1rem; }
 .bar nav a:hover, .bar nav a:focus-visible { color: var(--accent); }
 
 .hero { position: relative; height: 100svh; min-height: 40rem; }
-.js .hero { height: 260svh; }
+.js .hero { height: 340svh; }
 .stage { position: sticky; top: 0; height: 100svh; min-height: 40rem; overflow: hidden; background: var(--night); }
 .layer { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
 .layer picture, .layer img { width: 100%; height: 100%; object-fit: cover; }
@@ -64,6 +64,9 @@ p { margin: 0 0 1rem; }
 .open .from { margin-top: .9rem; font-style: italic; color: var(--hi); font-size: 1.1rem; }
 .inside { position: absolute; inset: 7rem var(--gutter) 2.5rem; display: grid; grid-template-columns: auto minmax(0, 30rem); justify-content: center; align-items: center; gap: clamp(2rem, 5vw, 4.5rem); }
 .cover { height: min(64svh, 35rem); width: auto; aspect-ratio: 640 / 908; box-shadow: 0 1.6rem 3.4rem rgba(0,0,0,.7); will-change: transform, opacity; transform-origin: 50% 60%; }
+.cv { position: relative; overflow: hidden; }
+.cv img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cv { overflow: visible; } .cv .hat { transform-origin: 46% 49.5%; will-change: transform; }
 .copy { will-change: transform, opacity; }
 .js .cover, .js .copy { opacity: 0; }
 html:not(.js) .open { display: none; }
@@ -134,7 +137,7 @@ footer p { margin: 0; }
       <p class="from">Stories from Animal Rescue, written and illustrated by Christine Skippins</p>
     </div>
     <div class="inside">
-      <img class="cover" src="img/cover-bruno.webp" alt="The Magic of Misty Nook: Bruno and his Friends, written and illustrated by Christine Skippins" width="640" height="908">
+      <div class="cover cv" role="img" aria-label="The Magic of Misty Nook: Bruno and his Friends, written and illustrated by Christine Skippins"><img src="img/bruno-plate.webp" alt="" width="640" height="908"><img class="hat" src="img/bruno-hat.webp" alt="" width="640" height="908"></div>
       <div class="copy">
         <h1>The Magic of Misty Nook</h1>
         <p class="tag">Bruno and his friends.</p>
@@ -162,7 +165,7 @@ footer p { margin: 0; }
     <div class="blurb">
       <p class="series">Four books so far</p><h2>The whole of Misty Nook</h2>
       <p>The Family from Castle Farm. Santa in a Camper. A Magical Misty Nook Festival. Bruno and his Friends.</p><p class="last">Pick one, or collect the set.</p>
-      <ul class="where"><li><a href="https://christineskippinsauthor.com">The Family from Castle Farm <span>on Amazon from the author’s site</span></a></li><li><a href="https://www.goodreads.com/author/show/22580714.Christine_Skippins">Goodreads <span>author page</span></a></li></ul>
+      <ul class="where"><li><a href="https://christineskippinsauthor.com">The Family from Castle Farm <span>her own website</span></a></li><li><a href="https://www.goodreads.com/author/show/22580714.Christine_Skippins">Goodreads <span>author page</span></a></li></ul>
     </div>
   </div>
 </section>
@@ -208,14 +211,25 @@ footer p { margin: 0; }
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function cl(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
   function ease(x) { return 1 - Math.pow(1 - x, 3); }
+  var hat = document.querySelector('.cv .hat');
+  function bounce(t) { /* drop, land, two small hops */
+    if (t < .45) { var u = t / .45; return 1 - u * u; }
+    if (t < .72) { var v = (t - .585) / .135; return .16 * (1 - v * v); }
+    if (t < .9) { var w = (t - .81) / .09; return .05 * (1 - w * w); }
+    return 0; }
   function draw(p) {
     bg.style.transform = 'scale(' + (1 + .14 * p).toFixed(4) + ')';
-    var o = cl(1 - p / .32);
+    var o = cl(1 - p / .14);
     open.style.opacity = o.toFixed(3); open.style.transform = 'translate3d(0,' + (-p * 90).toFixed(1) + 'px,0)';
-    var k = ease(cl((p - .08) / .55));
-    cover.style.opacity = cl((p - .04) / .2).toFixed(3);
-    cover.style.transform = 'translate3d(0,' + ((1 - k) * 60).toFixed(1) + 'px,0) scale(' + (.74 + .26 * k).toFixed(4) + ')';
-    var q = ease(cl((p - .5) / .3));
+    /* Bruno's MN hat drops out of the sky and lands on his head with a squash, then two little hops */
+    var t = cl((p - .14) / .46), y = bounce(t);
+    var near = Math.max(0, 1 - Math.abs(t - .45) / .06) + .5 * Math.max(0, 1 - Math.abs(t - .72) / .05);
+    var sq = near * .16;
+    hat.style.transform = 'translate3d(0,' + (-y * 95).toFixed(2) + '%,0) rotate(' + (y * -24).toFixed(2) + 'deg) scale(' + (1 + sq).toFixed(4) + ',' + (1 - sq).toFixed(4) + ')';
+    var k = ease(cl((p - .5) / .3));
+    cover.style.opacity = cl((p - .06) / .12).toFixed(3);
+    cover.style.transform = 'translate3d(0,' + ((1 - k) * 10).toFixed(1) + '%,0) scale(' + (1.3 - .3 * k).toFixed(4) + ')';
+    var q = ease(cl((p - .74) / .2));
     copy.style.opacity = q.toFixed(3); copy.style.transform = 'translate3d(0,' + ((1 - q) * 28).toFixed(1) + 'px,0)';
   }
   if (reduce) { document.documentElement.classList.remove('js'); hero.style.height = 'auto'; open.style.display = 'none'; return; }
